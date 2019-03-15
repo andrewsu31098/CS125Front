@@ -6,4 +6,31 @@
         <item>Female</item>
     </string-array>
 
+    <string-array name="wakeUp_array">
+        <item>5 am</item>
+        <item>6 am</item>
+        <item>7 am</item>
+        <item>8 am</item>
+        <item>9 am</item>
+        <item>10 am</item>
+        <item>11 am</item>
+        <item>12 pm</item>
+        <item>1 pm</item>
+        <item>2 pm</item>
+        <item>3 pm</item>
+        <item>4 pm</item>
+        <item>5 pm</item>
+        <item>6 pm</item>
+        <item>7 pm</item>
+        <item>8 pm</item>
+        <item>9 pm</item>
+        <item>10 pm</item>
+        <item>11 pm</item>
+        <item>12 pm</item>
+        <item>1 am</item>
+        <item>2 am</item>
+        <item>3 am</item>
+        <item>4 am</item>
+    </string-array>
+
 </resources>
