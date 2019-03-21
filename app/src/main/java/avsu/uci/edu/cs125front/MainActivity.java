@@ -49,9 +49,9 @@ public class MainActivity extends AppCompatActivity {
 //        editor.commit();
 
         //Add this code to test WakeUp Screen
-//        SharedPreferences.Editor editor = prefs.edit();
-//        editor.putString("user_date","End Of Time");
-//        editor.commit();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("user_date","End Of Time");
+        editor.commit();
 
 
         // Instantiate the object we use to get last location later.
@@ -151,6 +151,12 @@ public class MainActivity extends AppCompatActivity {
         wakeUpAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         wakeUpSpinner.setAdapter(wakeUpAdapter);
 
+        //Initialize sleep spinner and adapter
+        final Spinner sleepSpinner = findViewById(R.id.sleepSpinner);
+        ArrayAdapter<CharSequence> sleepAdapter = ArrayAdapter.createFromResource(MainActivity.this, R.array.wakeUp_array, android.R.layout.simple_spinner_item);
+        sleepAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sleepSpinner.setAdapter(sleepAdapter);
+
         //Retrieving answer, saving to Shared prefs, and changing views once button is pressed
         Button wakeUpButton = findViewById(R.id.wakeUpButton);
         wakeUpButton.setOnClickListener(new View.OnClickListener() {
@@ -160,8 +166,13 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences.Editor user_editor = getSharedPreferences("USER_DETAILS",MODE_PRIVATE).edit();
                 String wakeUpTime = wakeUpSpinner.getSelectedItem().toString();
                 user_editor.putString("user_wakeUp", wakeUpTime);
+                String sleepTime = sleepSpinner.getSelectedItem().toString();
+                user_editor.putString("user_sleep", sleepTime);
+
+
                 user_editor.commit();
                 Log.d("SAVED_WAKE_TIME",wakeUpTime);
+                Log.d("SAVED_SLEEP_TIME",sleepTime);
 
                 // Finally go to main view once we get wakeUp time
                 goToMainView();
