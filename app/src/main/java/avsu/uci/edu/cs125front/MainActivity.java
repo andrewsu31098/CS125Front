@@ -25,10 +25,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
     private FusedLocationProviderClient fusedLocationClient;
+
+    // Server Communication Objects
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +159,9 @@ public class MainActivity extends AppCompatActivity {
 
     void goToWakeupView(){
         setContentView(R.layout.activity_wakeup);
+
+        final RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+
         //Initialize spinner and adapter
         final Spinner wakeUpSpinner = findViewById(R.id.wakeUpSpinner);
         ArrayAdapter<CharSequence> wakeUpAdapter = ArrayAdapter.createFromResource(MainActivity.this, R.array.wakeUp_array, android.R.layout.simple_spinner_item);
@@ -163,17 +180,68 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                SharedPreferences.Editor user_editor = getSharedPreferences("USER_DETAILS",MODE_PRIVATE).edit();
+                // Update user Settings
+                SharedPreferences prefs = getSharedPreferences("USER_DETAILS",MODE_PRIVATE);
+                SharedPreferences.Editor user_editor = prefs.edit();
                 String wakeUpTime = wakeUpSpinner.getSelectedItem().toString();
                 user_editor.putString("user_wakeUp", wakeUpTime);
                 String sleepTime = sleepSpinner.getSelectedItem().toString();
                 user_editor.putString("user_sleep", sleepTime);
-
-
                 user_editor.commit();
                 Log.d("SAVED_WAKE_TIME",wakeUpTime);
                 Log.d("SAVED_SLEEP_TIME",sleepTime);
 
+
+                // Retrieve all user data to send
+                String postUserDataURL = "http://pluto.calit2.uci.edu:8084/v1/userinfo";
+                int user_age = prefs.getInt("user_age", 18);
+                String user_gender = prefs.getString("user_gender", "male");
+
+                final String requestBody = String.format("{\n" +
+                        "  \"age\": %x,\n" +
+                        "  \"gender\": \"%s\",\n" +
+                        "  \"wake\":\"%s\",\n" +
+                        "  \"sleep\":\"%s\"\n" +
+                        "}",user_age,user_gender,wakeUpTime,sleepTime);
+
+                StringRequest postUDataRequest = new StringRequest(Request.Method.POST, postUserDataURL, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i("VOLLEY", response);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("VOLLEY", error.toString());
+                    }
+                }) {
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8";
+                    }
+
+                    @Override
+                    public byte[] getBody() throws AuthFailureError {
+                        try {
+                            return requestBody == null ? null : requestBody.getBytes("utf-8");
+                        } catch (UnsupportedEncodingException uee) {
+                            VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                        String responseString = "";
+                        if (response != null) {
+                            responseString = String.valueOf(response.statusCode);
+                            // can get more details such as response.headers
+                        }
+                        return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                    }
+                };
+
+                queue.add(postUDataRequest);
                 // Finally go to main view once we get wakeUp time
                 goToMainView();
             }
