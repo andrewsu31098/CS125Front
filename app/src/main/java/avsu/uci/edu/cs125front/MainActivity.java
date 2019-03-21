@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
     void goToWakeupView(){
         setContentView(R.layout.activity_wakeup);
 
+        // Object that sends post request to server
         final RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
 
         //Initialize spinner and adapter
@@ -251,6 +252,10 @@ public class MainActivity extends AppCompatActivity {
 
     void goToMainView(){
         setContentView(R.layout.activity_main);
+
+        // Object that sends Post Heart rate request to server
+        final RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+
         //Main Activity Stuff
         Date c = Calendar.getInstance().getTime();
         SimpleDateFormat df = new SimpleDateFormat("h:mm a, z");
@@ -264,8 +269,82 @@ public class MainActivity extends AppCompatActivity {
         localSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fetchLocation();
-                Log.d("goToMainView Context", getApplicationContext().toString());
+//                fetchLocation();
+
+                String postHeartURL = "http://pluto.calit2.uci.edu:8084/v1/circadian";
+
+                final String requestBody = "{\n" +
+                        "      \"rates\":[\n" +
+                        "          {\n" +
+                        "              \"hour\": 5,\n" +
+                        "              \"heart_rate\": 65\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "              \"hour\": 5.1,\n" +
+                        "              \"heart_rate\": 70\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "              \"hour\": 5.2,\n" +
+                        "              \"heart_rate\": 69\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "              \"hour\": 5.3,\n" +
+                        "              \"heart_rate\": 65\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "              \"hour\": 5.4,\n" +
+                        "              \"heart_rate\": 64\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "              \"hour\": 5.5,\n" +
+                        "              \"heart_rate\": 57\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "              \"hour\": 5.6,\n" +
+                        "              \"heart_rate\": 52\n" +
+                        "          }\n" +
+                        "      ]\n" +
+                        "  }";
+
+                StringRequest postHeartRequest = new StringRequest(Request.Method.POST, postHeartURL, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i("VOLLEY", response);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("VOLLEY", error.toString());
+                    }
+                }) {
+                    @Override
+                    public String getBodyContentType() {
+                        return "application/json; charset=utf-8";
+                    }
+
+                    @Override
+                    public byte[] getBody() throws AuthFailureError {
+                        try {
+                            return requestBody == null ? null : requestBody.getBytes("utf-8");
+                        } catch (UnsupportedEncodingException uee) {
+                            VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                        String responseString = "";
+                        if (response != null) {
+                            responseString = String.valueOf(response.statusCode);
+                            // can get more details such as response.headers
+                        }
+                        return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                    }
+                };
+
+                queue.add(postHeartRequest);
+
             }
         });
     }
