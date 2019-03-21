@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
 //        editor.commit();
 
         //Add this code to test WakeUp Screen
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("user_date","End Of Time");
-        editor.commit();
+//        SharedPreferences.Editor editor = prefs.edit();
+//        editor.putString("user_date","End Of Time");
+//        editor.commit();
 
 
         // Instantiate the object we use to get last location later.
@@ -344,6 +344,8 @@ public class MainActivity extends AppCompatActivity {
                 };
 
                 queue.add(postHeartRequest);
+                Intent exerciseIntent = new Intent(getApplicationContext(), ExerciseListActivity.class);
+                startActivity(exerciseIntent);
 
             }
         });
